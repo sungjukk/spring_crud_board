@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.jen.userMapper">
+
+	<resultMap type="UserVO" id="UserMap">
+		<result column="USER_NO" property="userNo"/>
+		<result column="USER_ID" property="userId"/>
+		<result column="USER_PW" property="userPw"/>
+	</resultMap>
+	
+	<insert id="insertUser" parameterType="UserVO">
+		INSERT INTO JEN_USER(USER_ID, USER_PW)
+		VALUES(#{userId}, #{userPw})
+	</insert>
+	
+	<select id="selectUserById" parameterType="string" resultMap="UserMap">
+		SELECT USER_NO, USER_ID, USER_PW
+		  FROM JEN_USER
+		 WHERE USER_ID = #{user_id}
+	</select>
+	
+	<update id="updateUserByUserNo" parameterType="UserVO">
+		UPDATE JEN_USER
+		   SET
+			   USER_PW = #{userPw}
+		 WHERE
+			   USER_NO = #{userNo}
+	</update>
+		
+</mapper>

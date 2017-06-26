@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.company.jen.bbsMapper">
+
+ 	<resultMap type="BbsVO" id="BbsMap">
+		<result column="ROWNUM" property="rowNum"/>
+		<result column="BBS_NO" property="bbsNo"/>
+		<result column="USER_NO" property="userNo"/>
+		<result column="USER_ID" property="userId"/>
+		<result column="BBS_TITLE" property="bbsTitle"/>
+		<result column="BBS_CONTENT" property="bbsContent"/>
+		<result column="REG_DATE" property="regDate"/>
+		<result column="MODIFY_DATE" property="modifyDate"/>
+	</resultMap>
+	
+	<resultMap type="FileVO" id="FileMap">
+		<result column="FILE_NO" property="fileNo"/>
+		<result column="BBS_NO" property="bbsNo"/>
+		<result column="ORI_FILE_NAME" property="oriFileName"/>
+		<result column="REAL_FILE_NAME" property="realFileName"/>
+		<result column="FILE_PATH" property="filePath"/>
+		<result column="FILE_SIZE" property="fileSize"/>
+		<result column="REG_DATE" property="regDate"/>
+		<result column="REG_USER_ID" property="regUserId"/>
+		<result column="MODIFY_DATE" property="modifyDate"/>
+		<result column="MODIFY_USER_ID" property="modifyUserId"/>
+	</resultMap>
+	
+	<resultMap type="ReplyVO" id="ReplyMap">
+		<result column="REPLY_NO" property="replyNo"/>
+		<result column="BBS_NO" property="bbsNo"/>
+		<result column="REPLY_CONTENT" property="replyContent"/>
+		<result column="REPLY_PARENT" property="replyParent"/>
+		<result column="REPLY_DEPTH" property="replyDepth"/>
+		<result column="REG_DATE" property="regDate"/>
+		<result column="REG_USER_ID" property="regUserId"/>
+		<result column="MODIFY_DATE" property="modifyDate"/>
+		<result column="MODIFY_USER_ID" property="modifyUserId"/>
+	</resultMap>
+	
+	<!-- 글 등록 -->
+	<insert id="insertBoard" parameterType="BbsVO" useGeneratedKeys="true" keyProperty="bbsNo">
+		INSERT INTO JEN_BBS(USER_NO, BBS_TITLE, BBS_CONTENT)
+		VALUES(#{userNo}, #{bbsTitle}, #{bbsContent})
+	</insert>
+	
+	<!-- 파일 등록 -->
+	<insert id="insertFile" parameterType="FileVO">
+		INSERT INTO JEN_FILE(BBS_NO, ORI_FILE_NAME, REAL_FILE_NAME, FILE_PATH, FILE_SIZE, REG_USER_ID)
+		VALUES (#{bbsNo}, #{oriFileName}, #{realFileName}, #{filePath}, #{fileSize}, #{regUserId})
+	</insert>
+	
+	<!-- 전체 글 갯수 -->
+	<select id="countBoardList" resultType="int">
+		SELECT COUNT(*)
+		  FROM JEN_BBS
+	</select>
+	
+	<!-- 전체 글 조회 -->
+	<!-- <select id="selectBoardListX" resultMap="BbsMap">
+		SELECT B.BBS_NO, B.USER_NO, U.USER_ID, B.BBS_TITLE, B.BBS_CONTENT, B.REG_DATE, B.MODIFY_DATE
+		  FROM JEN_BBS B, JEN_USER U
+		 WHERE B.USER_NO = U.USER_NO
+		 ORDER BY B.BBS_NO DESC
+	</select> -->
+	
+	<!-- 전체 글 조회(페이징) -->
+	<select id="selectBoardList" parameterType="PageVO" resultMap="BbsMap">
+		SELECT TOP 10 R.BBS_NO, R.USER_NO, R.USER_ID, R.BBS_TITLE, R.BBS_CONTENT, R.REG_DATE, R.MODIFY_DATE
+		  FROM (SELECT TOP(10 * #{pageCnt}) ROW_NUMBER() OVER(ORDER BY B.BBS_NO DESC) AS ROWNUM, B.BBS_NO, B.USER_NO, U.USER_ID, B.BBS_TITLE, B.BBS_CONTENT, B.REG_DATE, B.MODIFY_DATE
+			      FROM JEN_BBS B, JEN_USER U
+			     WHERE B.USER_NO = U.USER_NO) AS R
+		 WHERE R.ROWNUM > (#{pageCnt} - 1) * 10;
+	</select>
+	
+	<!-- 글 상세 조회 -->
+	<select id="selectBoardInfo" parameterType="int" resultMap="BbsMap">
+		SELECT B.BBS_NO, B.USER_NO, U.USER_ID, B.BBS_TITLE, B.BBS_CONTENT, B.REG_DATE, B.MODIFY_DATE
+		  FROM JEN_BBS B, JEN_USER U
+		 WHERE B.USER_NO = U.USER_NO
+		   AND BBS_NO = #{bbsNo}
+	</select>
+	
+	<!-- 파일 조회 -->
+	<select id="selectBoardFile" parameterType="int" resultMap="FileMap">
+		SELECT FILE_NO, BBS_NO, ORI_FILE_NAME, REAL_FILE_NAME, FILE_PATH, FILE_SIZE
+		  FROM JEN_FILE
+		 WHERE BBS_NO = #{bbsNo}
+	</select>
+	
+	<!-- 글 수정 -->
+	<update id="updateBoard" parameterType="BbsVO">
+		UPDATE JEN_BBS
+		   SET
+			   BBS_TITLE = #{bbsTitle},
+			   BBS_CONTENT = #{bbsContent},
+			   MODIFY_DATE = GETDATE()
+		 WHERE BBS_NO = #{bbsNo}
+	</update>
+	
+	<!-- 글 삭제 -->
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM JEN_BBS
+		WHERE BBS_NO = #{bbsNo}
+	</delete>
+	
+	<!-- 글 검색 -->
+	<select id="searchWord" parameterType="string" resultMap="BbsMap">
+		SELECT B.BBS_NO, B.USER_NO, U.USER_ID, B.BBS_TITLE, B.BBS_CONTENT, B.REG_DATE, B.MODIFY_DATE
+		  FROM JEN_BBS B, JEN_USER U
+		 WHERE B.USER_NO = U.USER_NO
+		   AND BBS_TITLE LIKE '%' + #{searchWord} + '%'
+		 ORDER BY B.BBS_NO DESC
+	</select>
+	
+	
+	
+	
+	
+	<!-- 댓글 등록 -->
+	<insert id="insertReply" parameterType="ReplyVO">
+		INSERT INTO JEN_REPLY(BBS_NO, REPLY_CONTENT, REPLY_PARENT, REPLY_DEPTH, REG_USER_ID)
+		VALUES(#{bbsNo}, #{replyContent}, #{replyParent}, #{replyDepth}, #{regUserId})
+	</insert>
+	
+	<!-- 댓글 조회 -->
+	<select id="selectReplyList" parameterType="int" resultMap="ReplyMap">
+		SELECT REPLY_NO, BBS_NO, REPLY_CONTENT, REPLY_PARENT, REPLY_DEPTH, REG_DATE, REG_USER_ID
+		  FROM JEN_REPLY
+		 WHERE BBS_NO = #{bbsNo}
+		 ORDER BY REPLY_NO DESC
+	</select>
+	
+	<!-- 댓글 수정 -->
+	<update id="updateReply" parameterType="ReplyVO">
+		UPDATE JEN_REPLY
+		  SET
+		  	   REPLY_CONTENT = #{replyContent},
+		  	   MODIFY_DATE = GETDATE()
+		 WHERE REPLY_NO = #{replyNo}
+	</update>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="deleteReply" parameterType="int">
+		DELETE FROM JEN_REPLY
+		 WHERE REPLY_NO = #{replyNo}
+	</delete>
+
+</mapper>

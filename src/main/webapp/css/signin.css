@@ -1,0 +1,10 @@
+@CHARSET "UTF-8";
+
+.container { margin-top: 30px; }
+#mainDiv, #joinDiv, #modDiv, #writeFormDiv, #modFormDiv { width: 500px; }
+#btnDiv { margin-bottom: 30px; }
+#contentTd { padding: 20px; height: 300px; max-height: 300px; }
+#boardListDiv { height: 500px; }
+a[id^=title] { color: grey; }
+a[id^=title]:hover { text-decoration: none; font-weight: bold; }
+.newLabel { background-color: pink }
