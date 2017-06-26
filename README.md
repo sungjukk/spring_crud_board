@@ -15,4 +15,5 @@ _ㄱ..그래두 나름 1일차 신입 치고 괜찮았던 것 같다:sweat_smile
 * JAVA, Spring
 * MS-SQL
 * JQuery, Ajax
+* Bootstrap
 * 또 뭐 써야하지? 생각나면 써야겠다.
